@@ -21,6 +21,7 @@ void duplicateFile();
 void printPrettyFileSize(unsigned long long size);
 void printCharBinary(char in);
 
+#define COPY_BUFFER_SIZE 10000
 int main()
 {
     printf("This is a basic steganography program.\n");
@@ -344,25 +345,25 @@ void duplicateFile()
 
     printf("Please provide a path for the input file:\n");
     scanf("%s", input_fpath);
-    ifp = fopen(input_fpath, "r");
+    ifp = fopen(input_fpath, "rb");
 
     while (ifp == NULL)
     {
         printf("Could not open file. Please provide a path for the input file:\n");
         scanf("%s", input_fpath);
-        ifp = fopen(input_fpath, "r");
+        ifp = fopen(input_fpath, "rb");
     }
 
     printf("Please provide a path to the output file (with extension):\n");
     scanf("%s", output_fpath);
 
-    ofp = fopen(output_fpath, "w");
+    ofp = fopen(output_fpath, "wb");
 
     while (ofp == NULL)
     {
         printf("Could not open or create the file. Please provide a path for the output file (with extension):\n");
         scanf("%s", output_fpath);
-        ifp = fopen(output_fpath, "w");
+        ifp = fopen(output_fpath, "wb");
     }
 
     // get size of input file
@@ -378,14 +379,23 @@ void duplicateFile()
     printf("\n\n");
 
     // Copy contents to new file
-    unsigned char nextChar = fgetc(ifp);
-    while (!feof(ifp) && nextChar != EOF)
+    unsigned long long bytesRead = 0ull;
+    unsigned char byteBuffer[COPY_BUFFER_SIZE];
+    int f = 0;
+    while (bytesRead < input_file_size)
     {
-        fputc(nextChar, ofp);
-        nextChar = fgetc(ifp);
+        if (input_file_size - bytesRead <= COPY_BUFFER_SIZE)
+        {
+            fread(byteBuffer, input_file_size - bytesRead, 1, ifp);
+            fwrite(byteBuffer, input_file_size - bytesRead, 1, ofp);
+            break;
+        }
+        fread(byteBuffer, sizeof(byteBuffer), 1, ifp);
+        fwrite(byteBuffer, sizeof(byteBuffer), 1, ofp);
+
+        bytesRead += COPY_BUFFER_SIZE;
     }
 
-    printf("Done!!\n\n");
     fclose(ifp);
     fclose(ofp);
     return;
