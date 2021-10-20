@@ -49,8 +49,7 @@ int main()
             break;
         }
     }
-
-    printf("Please provide a file path:\n");
+    printf("\n\n");
     return 0;
 }
 
@@ -121,66 +120,14 @@ void hideMessage()
     printf(" (%llu characters)", input_file_size / 8ull);
     printf(":\n");
 
+    // Read secret message
     unsigned long long messageAllocSize = 5000ull;
     unsigned long long messageSize = 0;
     char *message = malloc(messageAllocSize);
     char *inputBuffer;
     int keepReading = 1;
     unsigned long long charIdx;
-    /*
-    while (keepReading)
-    {
-        inputBuffer = calloc(5000, 1);
-        scanf("%s", inputBuffer);
-        charIdx = 0;
 
-        while (inputBuffer[charIdx] != '\0')
-        {
-            // check whether this starts the terminating characters
-            keepReading = 0;
-            for (int i = 0; i < 4; i++)
-            {
-                if (inputBuffer[charIdx + i] != terminatingChars[i])
-                {
-                    keepReading = 1;
-                    break;
-                }
-            }
-
-            if (!keepReading)
-            {
-                break;
-            }
-
-            // make sure we have enough memory
-            if (messageSize >= messageAllocSize / 2ull)
-            {
-                messageAllocSize *= 2ull;
-                message = realloc(message, messageAllocSize);
-            }
-
-            // make sure the user didn't use too many characters
-            if (messageSize >= input_file_size / 8)
-            {
-                printf("Your message has been truncated because it used too many characters");
-                keepReading = 0;
-                break;
-            }
-
-            // store message
-            message[messageSize++] = inputBuffer[charIdx];
-            charIdx++;
-        }
-
-        // add new line char
-        if (keepReading)
-        {
-            message[messageSize++] = '\n';
-        }
-
-        free(inputBuffer);
-    }
-*/
     while (keepReading)
     {
         messageAllocSize = 5000ull;
@@ -193,6 +140,7 @@ void hideMessage()
             inputBuffer[idx] = '\0';
         }
 
+        // read in characters until we hit a new line character
         scanf(" %[^\n]s", inputBuffer);
 
         while (inputBuffer[charIdx] != '\0')
@@ -247,7 +195,7 @@ void hideMessage()
 
     unsigned long messageByteIdx = 0;
     int messageBitIdx = 0;
-    int nextByteInput = fgetc(ifp);
+    char nextByteInput = fgetc(ifp);
     char altByte;
     char bitMask;
 
@@ -256,6 +204,7 @@ void hideMessage()
 
     fseek(ifp, 1L, SEEK_SET);
     fseek(ofp, 0L, SEEK_SET);
+
     unsigned long long inputBytesRead = 0ull;
     while (inputBytesRead++ < input_file_size)
     {
@@ -270,12 +219,6 @@ void hideMessage()
             // print the size of the message (unsigned long)
             int bitPosition = (8 * messageSizeBytesPrinted + messageSizeBitsPrinted);
             altByte = (nextByteInput & ~1) | ((char)((messageSize & (0x0001 << (63 - bitPosition))) >> (63 - bitPosition)));
-
-            /* Testing
-            printf("BitPosition: %d, val (bit): %d, alt: %d, altBinary: ", bitPosition, ((char)((messageSize & (0x0001 << (63 - bitPosition))) >> (63 - bitPosition))) , altByte);
-            printCharBinary(altByte);
-            printf("\n");
-            */
 
             fputc(altByte, ofp);
 
@@ -387,7 +330,7 @@ void printMessage()
         fputc(charASCII, ofp);
         printf("%c", charASCII);
     }
-
+    printf("\n\n");
     fclose(ifp);
     fclose(ofp);
     return;
