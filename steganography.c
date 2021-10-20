@@ -204,19 +204,23 @@ void hideMessage()
 
     fseek(ifp, 1L, SEEK_SET);
     fseek(ofp, 0L, SEEK_SET);
-
+    int error = 0;
     unsigned long long inputBytesRead = 0ull;
     while (inputBytesRead++ < input_file_size)
     {
-        // copy header bytes
-        if (headerBytesPrinted < 54)
+        // Copy byte from original file, do not modify, iff:
+        // |- Copying remaining Bytes -|  OR  |--- copying header ---|
+        if (messageByteIdx >= messageSize || headerBytesPrinted++ < 54)
         {
-            headerBytesPrinted++;
-            fputc(nextByteInput, ofp);
+            if (fputc(nextByteInput, ofp) == EOF && error == 0)
+            {
+                error = 1;
+                printf("\n--- ERROR: ---\n\tCould not copy byte from original to new file. (either in header or remainder of file\n\n");
+            }
         }
+        // 2. print the size of the message (unsigned long)
         else if (messageSizeBytesPrinted < 8)
         {
-            // print the size of the message (unsigned long)
             int bitPosition = (8 * messageSizeBytesPrinted + messageSizeBitsPrinted);
             altByte = (nextByteInput & ~1) | ((char)((messageSize & (0x0001 << (63 - bitPosition))) >> (63 - bitPosition)));
 
@@ -229,10 +233,6 @@ void hideMessage()
                 messageSizeBitsPrinted = 0;
                 messageSizeBytesPrinted++;
             }
-        }
-        else if (messageByteIdx >= messageSize)
-        {
-            fputc(nextByteInput, ofp);
         }
         else
         {
@@ -375,7 +375,7 @@ void duplicateFile()
     //print the file size
     printf("Input file size: ");
     printPrettyFileSize(input_file_size);
-    printf("\n");
+    printf("\n\n");
 
     // Copy contents to new file
     unsigned char nextChar = fgetc(ifp);
@@ -385,6 +385,7 @@ void duplicateFile()
         nextChar = fgetc(ifp);
     }
 
+    printf("Done!!\n\n");
     fclose(ifp);
     fclose(ofp);
     return;
