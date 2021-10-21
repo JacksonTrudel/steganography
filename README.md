@@ -1,6 +1,6 @@
 # steganography
 
-Simple C program which offers utilities for substitution steganography. It can hide a message within a .bmp file and discover messages it has hidden. This is made for educational purposes, and shall not be used for criminal purposes.
+Simple C program which offers utilities for substitution steganography. It can hide a message within a .bmp file and discover messages it has hidden. This is made for educational purposes; use in accordance to state and federal law.
 
 ## How to use this program
 
